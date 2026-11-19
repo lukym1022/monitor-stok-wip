@@ -61,8 +61,8 @@ log = logging.getLogger("wip-alert-superset")
 SUPERSET_BASE = os.environ.get(
     "SUPERSET_BASE_URL", "https://dash.astronauts.id").rstrip("/")
 CHART_ID = int(os.environ.get("SUPERSET_CHART_ID", "33325"))
-SESSION_COOKIE = os.environ.get("SUPERSET_SESSION_COOKIE", "")
-WEBHOOK = os.environ["GCHAT_WEBHOOK_URL"]
+SESSION_COOKIE = os.environ.get("SUPERSET_SESSION_COOKIE", "").strip()
+WEBHOOK = os.environ["GCHAT_WEBHOOK_URL"].strip()
 INTERVAL = int(os.environ.get("CHECK_INTERVAL_MINUTES", "10"))
 TZ = ZoneInfo(os.environ.get("TIMEZONE", "Asia/Jakarta"))
 
