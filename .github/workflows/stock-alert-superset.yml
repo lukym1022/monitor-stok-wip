@@ -1,0 +1,51 @@
+# WIP & Low Stock Alert — versi Superset API, jalan tiap 10 menit
+# via GitHub Actions. Tanpa server, tanpa koneksi database langsung.
+# Script alert_bot_superset.py minta data chart 33325 ke API
+# Superset (GET /api/v1/chart/33325/data/?force=true) pakai cookie
+# sesi login Google. Superset yang menjalankan query ke ClickHouse.
+#
+# Catatan jujur soal GitHub Actions (cek 17 Nov 2026):
+# - Jadwal cron bersifat best-effort: "tiap 10 menit" artinya
+#   kira-kira tiap 10 menit, bisa terlambat beberapa menit.
+# - Repo publik: menit Actions gratis tanpa batas. Repo privat paket
+#   gratis: ~2.000 menit/bulan — sedangkan jadwal tiap 10 menit =
+#   ~4.320 run/bulan, tiap run ditagih minimal 1 menit. Jadi pakai
+#   repo publik (rahasia tetap aman di Secrets), atau siapkan bayar.
+# - Workflow terjadwal hanya jalan dari branch default, dan di repo
+#   publik jadwal bisa nonaktif sendiri setelah 60 hari tanpa
+#   aktivitas repo.
+
+name: WIP Low Stock Alert (Superset API)
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-stock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run one alert cycle
+        env:
+          SUPERSET_BASE_URL: https://dash.astronauts.id
+          SUPERSET_CHART_ID: "33325"
+          SUPERSET_SESSION_COOKIE: ${{ secrets.SUPERSET_SESSION_COOKIE }}
+          GCHAT_WEBHOOK_URL: ${{ secrets.GCHAT_WEBHOOK_URL }}
+          CHECK_INTERVAL_MINUTES: "10"
+          TIMEZONE: Asia/Jakarta
+        run: python alert_bot_superset.py --once
